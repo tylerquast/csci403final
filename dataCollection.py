@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 try: 
     # Connect to the database! Be sure to put in your user and 
     # password. Im a big dummy and I use the same password 
@@ -11,9 +12,9 @@ try:
     # that persons database
     conn = psycopg2.connect("""
                             dbname='csci403' 
-                            user='***CHANGE ME****' 
+                            user='' 
                             host='flowers.mines.edu' 
-                            password='***CHANGE ME***'
+                            password=''
                             """) 
     print("Connected succesfully! \n")
 except: 
@@ -50,10 +51,6 @@ print()
 print ("\nPrint everything queried above\n")
 for row in rows:
     print (row)
-
-
-
-
 
 
 

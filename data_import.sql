@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS flights;
-DROP TABLE IF EXISTS airline;
-DROP TABLE IF EXISTS airport;
+DROP TABLE IF EXISTS flights CASCADE;
+DROP TABLE IF EXISTS airline CASCADE;
+DROP TABLE IF EXISTS airport CASCADE;
 
 CREATE TABLE airline (
 id TEXT PRIMARY KEY,
@@ -63,3 +63,16 @@ DELETE from flights where length(origin_airport_id) != 3;
 ALTER TABLE flights ADD CONSTRAINT constraint_fkey1 FOREIGN KEY (airline_id) REFERENCES airline (id);
 ALTER TABLE flights ADD CONSTRAINT constraint_fkey2 FOREIGN KEY (origin_airport_id) REFERENCES airport (id);
 ALTER TABLE flights ADD CONSTRAINT constraint_fkey3 FOREIGN KEY (dest_airport_id) REFERENCES airport (id);
+
+
+
+-- create worst flights table
+CREATE TABLE worst_delays(
+id TEXT ,
+dep_delay INTEGER,
+PRIMARY KEY (id)
+);
+
+INSERT INTO worst_delays (id, dep_delay) SELECT origin_airport_id, MAX(dep_delay) FROM flights GROUP BY origin_airport_id;
+
+
