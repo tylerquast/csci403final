@@ -21,8 +21,8 @@ pg <- dbDriver("PostgreSQL")
 
 # Open the connection
 con <- dbConnect(pg,
-                 user = "user", 
-                 password = "password", 
+                 user = "galenvincent", 
+                 password = "Gv9002321!", 
                  host = "flowers.mines.edu", 
                  dbname = "csci403")
 
@@ -69,7 +69,7 @@ query <- paste("select a.name, a.city, f.freq, a.state ,a.longitude, a.latitude 
                "where f.origin_airport_id = a1.id and a1.city = 'Denver' and f.dest_airport_id = a2.id",
                "group by dest_city_id) f, airport a",
                "where f.dest_city_id = a.id",
-               "and a.state != 'HI' and a.state != 'AK' and country = 'USA';")
+               "and a.state NOT IN ('HI', 'AK') and country = 'USA';")
 
 dbsq <- dbSendQuery(con, query)
 
@@ -88,7 +88,7 @@ while(any(duplicated(res$city) == TRUE)){
 data <- res[order(res$freq),]
 names(data) <- c("name", "city" ,"freq", "state" ,"long", "lat")
 
-fwrite(data, "denver_most_popular_cities.csv")
+#fwrite(data, "denver_most_popular_cities.csv")
 
 data_cut <- data[data$freq > 3400,]
 
@@ -103,6 +103,35 @@ ggplot(US, aes(x = long, y = lat, group = group)) +
   theme_map() +
   scale_color_viridis(name = "Flights") +
   scale_size_continuous(range = c(0,20), guide = FALSE)
+
+# Madeline's data visualization
+query <- paste("SELECT port.city city, port.state, w.dep_delay delay, port.longitude long, port.latitude lat",
+               "FROM worst_delays AS w, airport AS port",
+               "WHERE w.id = port.id AND port.state NOT IN ('HI', 'AK', 'VI', 'PR', 'GU', 'AS') AND port.country = 'USA' AND port.latitude IS NOT NULL",
+               "ORDER BY w.dep_delay DESC",
+               "LIMIT 200;")
+
+dbsq <- dbSendQuery(con, query)
+res <- fetch(dbsq, n = -1)
+
+# get rid of non-mainland data
+data <- res[order(res$delay),]
+
+data_cut <- data[data$delay > 1500,]
+
+US <- map_data("usa") 
+states <- map_data("state")
+
+ggplot(US, aes(x = long, y = lat, group = group)) +
+  geom_polygon(data = states, col = "white", fill = "grey") +
+  geom_point(data = data, aes(group = 1, col = delay, size = delay), alpha = 0.7) +
+  geom_text(data = data_cut, aes(group = 1, label = city)) +
+  coord_map() +
+  theme_map() +
+  scale_color_viridis(name = "Max dep. delay (mins)", guide = guide_colorbar(direction = "horizontal")) +
+  scale_size_continuous(range = c(0,20), guide = FALSE)
+
+
 
 #which day is most populat to fly?
 query <- paste("select f.day_of_week, count(*) from flights f, airport a",
